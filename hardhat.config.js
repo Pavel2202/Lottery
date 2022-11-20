@@ -25,13 +25,14 @@ module.exports = {
       accounts: [PRIVATE_KEY],
     },
   },
-  solidity: "0.8.17",
   namedAccounts: {
     deployer: {
       default: 0,
+      1: 0,
     },
     player: {
       default: 1,
     },
   },
+  solidity: "0.8.17",
 };
