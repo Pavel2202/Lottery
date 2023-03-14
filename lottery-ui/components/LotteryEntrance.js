@@ -9,13 +9,15 @@ const LotteryEntrance = () => {
   const lotteryAddress =
     chainId in contractAddresses ? contractAddresses[chainId] : null;
   const [entranceFee, setEntranceFee] = useState("0");
+  const [numPlayers, setNumPlayers] = useState("0");
+  const [recentWinner, setRecentWinner] = useState("0x");
 
   const { runContractFunction: enterLottery } = useWeb3Contract({
     abi: abi,
     contractAddress: lotteryAddress,
     functionName: "enterLottery",
     params: {},
-    msgValue: 1,
+    msgValue: entranceFee,
   });
 
   const { runContractFunction: getEntranceFee } = useWeb3Contract({
@@ -25,9 +27,27 @@ const LotteryEntrance = () => {
     params: {},
   });
 
+  const { runContractFunction: getNumberOfPlayers } = useWeb3Contract({
+    abi: abi,
+    contractAddress: lotteryAddress,
+    functionName: "getNumberOfPlayers",
+    params: {},
+  });
+
+  const { runContractFunction: getRecentWinner } = useWeb3Contract({
+    abi: abi,
+    contractAddress: lotteryAddress,
+    functionName: "getRecentWinner",
+    params: {},
+  });
+
   async function updateUI() {
     const entranceFeeFromCall = (await getEntranceFee()).toString();
-    setEntranceFee(ethers.utils.formatUnits(entranceFeeFromCall, "ether"));
+    const numberOfPlayersFromCall = (await getNumberOfPlayers()).toString();
+    const recentWinnerFromCall = (await getRecentWinner()).toString();
+    setEntranceFee(entranceFeeFromCall);
+    setNumPlayers(numberOfPlayersFromCall);
+    setRecentWinner(recentWinnerFromCall);
   }
 
   useEffect(() => {
@@ -36,7 +56,26 @@ const LotteryEntrance = () => {
     }
   }, [isWeb3Enabled]);
 
-  return (<div>Entrance fee: {entranceFee} ETH</div>);
+  return (
+    <div>
+      {lotteryAddress ? (
+        <div>
+          <button
+            onClick={async function () {
+              await enterLottery();
+            }}
+          >
+            Enter Lottery
+          </button>
+          Entrance fee: {ethers.utils.formatUnits(entranceFee, "ether")} ETH
+          Number of Players: {numPlayers}
+          Recent Winner: {recentWinner}
+        </div>
+      ) : (
+        <div>No Lottery address detected.</div>
+      )}
+    </div>
+  );
 };
 
 export default LotteryEntrance;
